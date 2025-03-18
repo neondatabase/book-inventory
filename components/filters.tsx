@@ -185,30 +185,6 @@ function FilterBase({ searchParams }: FilterProps) {
               <span>{optimisticFilters.pgs || 1000}</span>
             </div>
           </div>
-
-          <div>
-            <Label>Book Lists</Label>
-            <ScrollArea className="h-[200px] mt-2">
-              {LISTS.map((list) => (
-                <div
-                  key={list.name}
-                  className="flex items-center space-x-2 py-1"
-                >
-                  <Checkbox
-                    id={`list-${list.name.toLowerCase()}`}
-                    checked={
-                      optimisticFilters.isbn?.split(',')[0] ===
-                      list.isbns.split(',')[0]
-                    }
-                    onCheckedChange={() => handleListToggle(list.isbns)}
-                  />
-                  <Label htmlFor={`list-${list.name.toLowerCase()}`}>
-                    {list.name}
-                  </Label>
-                </div>
-              ))}
-            </ScrollArea>
-          </div>
         </div>
       </ScrollArea>
 
