@@ -25,7 +25,7 @@ export default async function Page(props: {
       <div className="flex-grow overflow-auto min-h-[200px]">
         <div className="group-has-[[data-pending]]:animate-pulse p-4">
           <div className="mb-4 text-sm text-gray-600">
-            Search time: {fetchTime} ms
+            Search time: {fetchTime.toFixed(2)} ms
           </div>
           <BooksGrid books={books} />
         </div>
