@@ -82,7 +82,10 @@ export async function fetchBooksWithPagination(searchParams: SearchParams) {
     LIMIT ${ITEMS_PER_PAGE}
     OFFSET ${offset}
   `);
-  return [rows, (performance.now() - startTime)] as [Record<string,any>[],number];
+  return [rows, performance.now() - startTime] as [
+    Record<string, any>[],
+    number,
+  ];
 }
 
 export async function estimateTotalBooks(searchParams: SearchParams) {
@@ -98,8 +101,9 @@ export async function estimateTotalBooks(searchParams: SearchParams) {
     .filter(Boolean)
     .join(" AND ");
   const explainResult = await pool(`
-    SELECT COUNT(*) FROM books
+    EXPLAIN (FORMAT JSON)
+    SELECT image_url FROM books
     ${filters ? `WHERE ${filters}` : ""}
   `);
-  return explainResult[0]["count"];
+  return (explainResult[0] as any)["QUERY PLAN"][0]["Plan"]["Plan Rows"];
 }
