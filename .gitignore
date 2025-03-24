@@ -40,3 +40,4 @@ next-env.d.ts
 book_import_checkpoint.json
 author_import_checkpoint.json
 thumbhash_update_checkpoint.json
+.env*.local
