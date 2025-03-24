@@ -7,6 +7,7 @@ import {
   ITEMS_PER_PAGE,
 } from "@/lib/db/queries";
 import { parseSearchParams } from "@/lib/url-state";
+import { LoadComparisons } from "@/components/comparison";
 
 export default async function Page(props: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -24,8 +25,11 @@ export default async function Page(props: {
     <div className="flex flex-col h-full">
       <div className="flex-grow overflow-auto min-h-[200px]">
         <div className="group-has-[[data-pending]]:animate-pulse p-4">
-          <div className="mb-4 text-sm text-gray-600">
-            Search time: {fetchTime.toFixed(2)} ms
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <span className="mb-4 text-sm text-gray-600">
+              Search time: {fetchTime.toFixed(2)} ms
+            </span>
+            <LoadComparisons />
           </div>
           <BooksGrid books={books} />
         </div>

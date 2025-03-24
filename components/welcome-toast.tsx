@@ -16,9 +16,12 @@ export function WelcomeToast() {
         },
         description: (
           <>
-            This is a demo of searching, filtering, and paginating 1,000,000
-            books from{" "}
-            <a href="https://neon.tech/blog/pgsearch-on-neon" target="_blank">
+            This is a demo of searching, filtering, and paginating 1M books from{" "}
+            <a
+              target="_blank"
+              className="border-b hover:border-green-600"
+              href="https://neon.tech/blog/pgsearch-on-neon"
+            >
               Neon Postgres (powered by pg_search)
             </a>
             .
@@ -27,6 +30,5 @@ export function WelcomeToast() {
       });
     }
   }, []);
-
   return null;
 }
