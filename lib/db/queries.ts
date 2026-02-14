@@ -1,11 +1,7 @@
-import { neon, neonConfig } from "@neondatabase/serverless";
-import { SearchParams } from "@/lib/url-state";
-
-neonConfig.poolQueryViaFetch = true;
-
-if (!process.env.POSTGRES_URL)
-  throw new Error("Environment variable POSTGRES_URL is not defined");
-const pool = neon(process.env.POSTGRES_URL);
+import { sql, and, gte, eq, lte, not, isNull, inArray } from 'drizzle-orm';
+import { db } from './drizzle';
+import { books, authors, bookToAuthor } from './schema';
+import { SearchParams } from '@/lib/url-state';
 
 export const ITEMS_PER_PAGE = 28;
 export const EMPTY_IMAGE_URL =
@@ -55,21 +51,59 @@ function buildFilters(searchParams: SearchParams) {
     );
   }
 
-  if (searchParams.isbn) {
-    const isbnArray = searchParams.isbn
-      .split(",")
-      .map((id) => id.trim())
-      .filter(Boolean);
-    if (isbnArray.length > 0) {
-      filters.push(`isbn = ANY(${pushValue(isbnArray)}::text[])`);
+const ratingFilter = (rtg?: string) => {
+  if (rtg) {
+    const minRating = Number(rtg);
+    if (Number.isFinite(minRating)) {
+      return sql`${books.average_rating} >= ${minRating}`;
     }
   }
 
-  return {
-    whereClause: filters.length ? `WHERE ${filters.join(" AND ")}` : "",
-    values,
-  };
-}
+const languageFilter = (lng?: string) => {
+  if (lng === 'en') {
+    return sql`${books.language_code} IN ('eng', 'en-US', 'en-GB')`;
+  }
+  return lng ? eq(books.language_code, lng) : undefined;
+};
+
+const pageFilter = (pgs?: string) => {
+  if (pgs) {
+    const parsedPages = Number(pgs);
+    if (Number.isFinite(parsedPages)) {
+      const maxPages = Math.min(1000, parsedPages);
+      return lte(books.num_pages, maxPages);
+    }
+  }
+  return lte(books.num_pages, 1000);
+};
+
+const searchFilter = (q?: string) => {
+  const searchText = q?.trim().toLowerCase();
+  if (searchText) {
+    return sql`${books.title_tsv} @@ websearch_to_tsquery('english', ${searchText})`;
+  }
+  return undefined;
+};
+
+const imageFilter = () => {
+  return and(
+    not(isNull(books.image_url)),
+    sql`${books.image_url} != ${EMPTY_IMAGE_URL}`
+  );
+};
+
+const isbnFilter = (isbn?: string) => {
+  if (isbn) {
+    const isbnArray = isbn
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (isbnArray.length > 0) {
+      return inArray(books.isbn, isbnArray);
+    }
+  }
+  return undefined;
+};
 
 export async function fetchBooksWithPagination(searchParams: SearchParams) {
   let requestedPage = Math.max(1, Number(searchParams?.page) || 1);
